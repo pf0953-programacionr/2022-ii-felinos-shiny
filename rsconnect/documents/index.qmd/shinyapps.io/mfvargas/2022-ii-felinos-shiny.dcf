@@ -1,0 +1,15 @@
+name: 2022-ii-felinos-shiny
+title: 2022-ii-felinos-shiny
+username:
+account: mfvargas
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7690102
+bundleId: 6537395
+url: https://mfvargas.shinyapps.io/2022-ii-felinos-shiny/
+when: 1669015024.99215
+lastSyncTime: 1669015024.99218
+quarto_version: 1.0.36
+quarto_engines: knitr
+asMultiple: FALSE
+asStatic: FALSE

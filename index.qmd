@@ -1,0 +1,107 @@
+---
+title: "Felinos de Costa Rica"
+format: 
+  html:
+    theme: cosmo
+    page-layout: custom
+server: shiny
+---
+
+```{r}
+#| label: inicio
+#| context: setup
+#| message: false
+
+# Bloque para operaciones iniciales
+
+library(dplyr)
+library(DT)
+library(sf)
+library(shiny)
+```
+
+```{r}
+#| label: lectura-datos
+#| context: data
+
+# Bloque para lectura de datos y compartirlos
+# en todos los bloques de código
+
+# Archivo DwC con registros de presencia
+archivo_dwc <- "datos/felinos.csv"
+
+# Lectura del archivo DwC
+registros <-
+  st_read(
+    archivo_dwc,
+    options = c(
+      "X_POSSIBLE_NAMES=decimalLongitude", # columna de longitud decimal
+      "Y_POSSIBLE_NAMES=decimalLatitude"   # columna de latitud decimal
+    ),
+    quiet = TRUE
+  )
+```
+
+```{r}
+#| panel: sidebar
+
+# Barra lateral
+
+# Lista de especies
+lista_especies <- unique(registros$species)
+lista_especies <- sort(lista_especies)
+lista_especies <- c("Todas", lista_especies)
+
+# Selector de especies
+selectInput(
+  inputId = "especie",
+  label = "Especie",
+  choices = lista_especies,
+  selected = "Todas"
+)
+```
+
+```{r}
+#| panel: fill
+
+# Cuerpo principal de la interfaz de usuario
+
+dataTableOutput("tabla")
+```
+
+```{r}
+#| label: servidor
+#| context: server
+
+# Operaciones en el servidor
+
+# Función reactiva para filtrar los registros con base en los controles de entrada
+filtrarRegistros <- reactive({
+  # Valor inicial del objeto que va a retornarse
+  registros_filtrados <- registros
+  
+  if (input$especie != "Todas") {
+    registros_filtrados <-
+      registros_filtrados |>
+      filter(species == input$especie)
+  }
+
+  return(registros_filtrados)
+})  
+  
+# Tabla con registros de presencia
+output$tabla <- renderDataTable({
+  registros <- filtrarRegistros()
+  
+  registros |>
+    st_drop_geometry() |>
+    select(species, stateProvince, locality, eventDate) |>
+    datatable(
+      colnames = c("Especie", "Provincia", "Localidad", "Fecha"),
+      options = list(
+        pageLength = 5,
+        language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+      )
+    )
+})
+```
